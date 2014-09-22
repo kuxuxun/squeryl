@@ -4,19 +4,25 @@ import Keys._
 
 object SquerylBuild extends Build {
 
+  val defaultResolvers = Seq(
+    Resolver.sonatypeRepo("releases"),
+    Classpaths.typesafeReleases,
+    "Kuxuxn Repository" at "http://kuxuxun.github.io/modules/repository/"
+  )
+
   lazy val squeryl = Project(
     id = "squeryl",
     base = file("."),
     settings = Project.defaultSettings /* ++ lsSettings */ ++ Seq(
       description := "A Scala ORM and DSL for talking with Databases using minimum verbosity and maximum type safety",
-      organization := "org.squeryl",
-      version := "0.9.6-RC3",
+      organization := "com.github.kuxuxun",
+      version := "0.9.6-RC3-custom-1",
       javacOptions := Seq("-source", "1.6", "-target", "1.6"),
   	  version <<= version { v => //only release *if* -Drelease=true is passed to JVM
   	  	val release = Option(System.getProperty("release")) == Some("true")
   	  	if(release)
-  	  		v 
-  	  	else {	
+  	  		v
+  	  	else {
   	  		val suffix = Option(System.getProperty("suffix"))
   	  		val i = (v.indexOf('-'), v.length) match {
   	  		  case (x, l) if x < 0 => l
@@ -26,6 +32,8 @@ object SquerylBuild extends Build {
   	  		v.substring(0,i) + "-" + (suffix getOrElse "SNAPSHOT")
   	  	}
   	  },
+
+      resolvers ++= defaultResolvers,
       parallelExecution := false,
       publishMavenStyle := true,
       scalaVersion := "2.11.1",
@@ -60,16 +68,10 @@ object SquerylBuild extends Build {
                        <url>https://github.com/davewhittaker</url>
                      </developer>
                    </developers>),
-      publishTo <<= version { v => //add credentials to ~/.sbt/sonatype.sbt
-        val nexus = "https://oss.sonatype.org/"
-        if (v.trim.endsWith("SNAPSHOT"))
-          Some("snapshots" at nexus + "content/repositories/snapshots")
-        else
-          Some("releases" at nexus + "service/local/staging/deploy/maven2")
-      },
+      publishTo := Some(Resolver.file("scalaactiverecord",file("/modules/repository"))(Patterns(true, Resolver.mavenStyleBasePattern))),
       publishArtifact in Test := false,
       pomIncludeRepository := { _ => false },
-      //below is for lsync, run "ls-write-version", commit to github, then run "lsync" 
+      //below is for lsync, run "ls-write-version", commit to github, then run "lsync"
       /*
 			  (LsKeys.tags in LsKeys.lsync) := Seq("sql", "orm", "query", "database", "db", "dsl"),
 			  (LsKeys.docsUrl in LsKeys.lsync) := Some(new URL("http://squeryl.org/api/")),
@@ -79,7 +81,7 @@ object SquerylBuild extends Build {
         "cglib" % "cglib-nodep" % "2.2",
         "com.h2database" % "h2" % "1.2.127" % "provided",
         "mysql" % "mysql-connector-java" % "5.1.10" % "provided",
-        "postgresql" % "postgresql" % "8.4-701.jdbc4" % "provided",
+        "org.postgresql" % "postgresql" % "9.3-1102-jdbc4",
         "net.sourceforge.jtds" % "jtds" % "1.2.4" % "provided",
         "org.apache.derby" % "derby" % "10.7.1.1" % "provided",
         "junit" % "junit" % "4.8.2" % "provided"
