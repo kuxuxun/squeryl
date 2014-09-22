@@ -29,7 +29,7 @@ object SquerylBuild extends Build {
   	  		  case (x, l) if v substring (x+1) matches """\d+""" => l //patch level, not RCx
   	  		  case (x, _) => x
   	  		}
-  	  		v.substring(0,i) + "-" + (suffix getOrElse "SNAPSHOT")
+  	  		v
   	  	}
   	  },
 
